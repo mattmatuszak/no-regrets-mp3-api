@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const express = require('express')
 const multer = require('multer')
 
@@ -31,8 +33,48 @@ app.post('/api/media/:mediaItemId/:kind', upload.single('file'), function (req, 
   res.status(201).json({ success: true })
 })
 
+const extensionFilter = file => file.indexOf('.mp3') >= 0 || file.indexOf('.png') >= 0
+
+const reduceDirectoryContents = (accum, fileName) => {
+  const mediaId = fileName.substring(0, fileName.indexOf('-'))
+  let mediaItem = accum.find(item => item.id === mediaId)
+  if (!mediaItem) {
+    mediaItem = { id: mediaId }
+    accum.push(mediaItem)
+  }
+  const kind = fileName.substring(fileName.indexOf('-') + 1, fileName.indexOf('.'))
+  if (!mediaItem[kind]) {
+    mediaItem[kind] = []
+  }
+  mediaItem[kind].push(fileName)
+  return accum
+}
+
 app.get('/api/media', (req, res) => {
-  res.json({ test: true })
+  const directoryContents = fs.readdirSync(MP3_STORAGE_LOCATION).filter(extensionFilter)
+  const media = directoryContents.reduce(reduceDirectoryContents, [])
+  res.json(media)
+})
+
+app.get('/api/media/content/:fileName', (req, res) => {
+  const fileRef = `${MP3_STORAGE_LOCATION}/${req.params.fileName}`
+  if (!fs.existsSync(fileRef)) {
+    res.status(404).end()
+  } else {
+    res.sendFile(fileRef)
+  }
+})
+
+app.get('/api/media/:mediaItemId', (req, res) => {
+  const directoryContents = fs.readdirSync(MP3_STORAGE_LOCATION)
+    .filter(fileName => fileName.indexOf(req.params.mediaItemId) >= 0)
+    .filter(extensionFilter)
+  const media = directoryContents.reduce(reduceDirectoryContents, [])
+  if (media.length === 0) {
+    res.status(404).end()
+  } else {
+    res.json(media[0])
+  }
 })
 
 const port = 7002
