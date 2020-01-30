@@ -27,6 +27,9 @@ app.post('/api/media/:mediaItemId/:kind', upload.single('file'), function (req, 
   const id = key(req)
   if (req.params.kind === 'original') {
     ThreadQueue.q.push({ id, task: new ThreadQueue.ConvertToMono({ inputMp3: `${MP3_STORAGE_LOCATION}/${id}` }) })
+  } else {
+    ThreadQueue.q.push({ id, task: new ThreadQueue.Spectrogram({ inputMp3: `${MP3_STORAGE_LOCATION}/${id}` }) })
+    ThreadQueue.q.push({ id: `${id}-compand`, task: new ThreadQueue.Compand({ inputMp3: `${MP3_STORAGE_LOCATION}/${id}` }) })
   }
   // req.file is the `avatar` file
   // req.body will hold the text fields, if there were any
@@ -58,6 +61,7 @@ app.get('/api/media', (req, res) => {
 
 app.get('/api/media/content/:fileName', (req, res) => {
   const fileRef = `${MP3_STORAGE_LOCATION}/${req.params.fileName}`
+  console.log(`getting file ${fileRef}`)
   if (!fs.existsSync(fileRef)) {
     res.status(404).end()
   } else {

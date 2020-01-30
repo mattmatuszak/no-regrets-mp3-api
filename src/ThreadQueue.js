@@ -9,12 +9,13 @@ class Compand {
     }
     this.inputMp3 = params.inputMp3
     this.outputMp3 = params.outputMp3 || params.inputMp3.replace('.mp3', '-companded.mp3')
+    this.outputMp3Spect = this.outputMp3.replace('.mp3', '.png')
   }
   async execute (taskId) {
     console.log(`starting ${this.inputMp3} > ${this.outputMp3}`)
     // sox asz.wav asz-car.wav compand 0.3,1 6:−70,−60,−20 −5 −90 0.2
-    const cmpdResults = await exec(`docker rm ${taskId}-spect && docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-spect -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.inputMp3} ${this.outputMp3} compand 0.3,1 6:−70,−60,−20 −5 −90 0.2`);
-    const spectResults = await exec(`docker rm ${taskId}-spect && docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-spect -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.inputMp3} -n spectrogram -r -q 2 -o ${this.outputMp3}`);
+    const cmpdResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-cmpd-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.inputMp3} ${this.outputMp3} compand 0.3,1 6:-70,-60,-20 -5 -90 0.2`);
+    const spectResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}--spect-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.outputMp3} -n spectrogram -Y 130 -r -q 2 -o ${this.outputMp3Spect}`);
     return true
   }
 }
@@ -25,11 +26,11 @@ class Spectrogram {
       throw new Error(`no idea what the input is`)
     }
     this.inputMp3 = params.inputMp3
-    this.outputMp3 = params.outputMp3 || params.inputMp3.replace('.mp3', '.png')
+    this.outputMp3Spect = this.inputMp3.replace('.mp3', '.png')
   }
   async execute(taskId) {
     console.log(`starting ${this.inputMp3} > ${this.outputMp3}`)
-    const { stdout, stderr } = await exec(`docker rm ${taskId} && docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId} -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.inputMp3} -n spectrogram -r -q 2 -o ${this.outputMp3}`);
+    const { stdout, stderr } = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-spect-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.inputMp3} -n spectrogram -Y 130 -r -q 2 -o ${this.outputMp3Spect}`);
     return true
   }
 }
@@ -42,11 +43,15 @@ class ConvertToMono {
     this.inputMp3 = params.inputMp3
     this.outputMp3 = params.outputMp3 || params.inputMp3.replace('.mp3', '-mono.mp3')
     this.outputMp3Spect = this.outputMp3.replace('.mp3', '.png')
+    this.outputCmpdMp3 = params.outputMp3 || params.inputMp3.replace('.mp3', '-companded.mp3')
+    this.outputCmpdMp3Spect = this.outputMp3.replace('.mp3', '.png')
   }
   async execute (taskId) {
     console.log(`starting ${this.inputMp3} > ${this.outputMp3}`)
     const monoResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test lame --mp3input --silent -m m -b 48 ${this.inputMp3} ${this.outputMp3}`);
-    const spectResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-spect$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.outputMp3} -n spectrogram -r -q 2 -o ${this.outputMp3Spect}`);
+    const spectResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-spect-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.outputMp3} -n spectrogram -Y 130 -r -q 2 -o ${this.outputMp3Spect}`);
+    const cmpdResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-cmpd-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.outputMp3} ${this.outputCmpdMp3} compand 0.3,1 6:-70,-60,-20 -5 -90 0.2`);
+    const cmpdSpectResults = await exec(`docker run -v /tmp/no-regrets:/tmp/no-regrets --name ${taskId}-cmpdSpect-$(date +%s) -u $(id -u \${USER}):$(id -g \${USER}) audio-commands:test sox ${this.outputCmpdMp3} -n spectrogram -Y 130 -r -q 2 -o ${this.outputCmpdMp3Spect}`);
     return true
   }
 }
