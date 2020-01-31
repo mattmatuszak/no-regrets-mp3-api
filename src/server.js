@@ -3,10 +3,12 @@ const fs = require('fs')
 const express = require('express')
 const multer = require('multer')
 
-const ThreadQueue = require('./src/ThreadQueue')
+const ThreadQueue = require('./ThreadQueue')
 
 const key = req => `${req.params.mediaItemId}-${req.params.kind}.mp3`
-const MP3_STORAGE_LOCATION = '/tmp/no-regrets'
+const MP3_STORAGE_LOCATION = process.env.MP3_STORAGE_LOCATION || '/tmp/no-regrets'
+
+console.log(`MP3_STORAGE_LOCATION = ${MP3_STORAGE_LOCATION}`)
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -81,6 +83,6 @@ app.get('/api/media/:mediaItemId', (req, res) => {
   }
 })
 
-const port = 7002
+const port = process.env.MEDIA_API_PORT || 7002
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
