@@ -44,7 +44,13 @@ const reduceDirectoryContents = (accum, fileName) => {
   const mediaId = fileName.substring(0, fileName.indexOf('-'))
   let mediaItem = accum.find(item => item.id === mediaId)
   if (!mediaItem) {
-    mediaItem = { id: mediaId }
+    let status = 'NOT READY'
+    if (fs.existsSync(`${MP3_STORAGE_LOCATION}/${mediaId}.txt`)) {
+      status = fs.readFileSync(`${MP3_STORAGE_LOCATION}/${mediaId}.txt`, { encoding: 'utf8' })
+      console.log(`reading ${MP3_STORAGE_LOCATION}/${fileName} ${status}`)
+    }
+    
+    mediaItem = { id: mediaId, status }
     accum.push(mediaItem)
   }
   const kind = fileName.substring(fileName.indexOf('-') + 1, fileName.indexOf('.'))

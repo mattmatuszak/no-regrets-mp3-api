@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "devc": "MEDIA_API_PORT=7051 MP3_STORAGE_LOCATION=/tmp nodemon src/server"
+    "devc": "MEDIA_API_PORT=7002 MP3_STORAGE_LOCATION=/home/matt/dev/nr/audio nodemon src/server"
   },
   "keywords": [],
   "author": "",
