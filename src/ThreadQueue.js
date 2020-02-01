@@ -30,6 +30,21 @@ class Compand {
   }
 }
 
+class UpdateStatus {
+  constructor(params) {
+    if (!params.mp3Id || !params.status) {
+      throw new Error(`no idea what the input is`)
+    }
+    this.mp3Id = params.mp3Id
+    this.status = params.status
+  }
+  async execute(taskId) {
+    console.log(`starting ${this.inputMp3} > ${this.outputMp3}`)
+    const subsplashe = await exec(`echo "${this.status}" > ${this.mp3Id}.txt`);
+    return true
+  }
+}
+
 class Spectrogram {
   constructor(params) {
     if (!params.inputMp3) {
@@ -96,5 +111,6 @@ module.exports = {
   q,
   ConvertToMono,
   Compand,
-  Spectrogram
+  Spectrogram,
+  UpdateStatus
 }

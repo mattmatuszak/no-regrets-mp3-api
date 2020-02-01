@@ -25,7 +25,7 @@ const upload = multer({ storage: storage })
 const app = express()
 
 app.post('/api/media/:mediaItemId/:kind', upload.single('file'), function (req, res) {
-  console.log(`${req.params.mediaItemId}=${req.params.kind}`)
+  console.log(`${req.params.mediaItemId}-${req.params.kind}`)
   const id = key(req)
   if (req.params.kind === 'original') {
     ThreadQueue.q.push({ id, task: new ThreadQueue.ConvertToMono({ inputMp3: `${MP3_STORAGE_LOCATION}/${id}` }) })
@@ -36,6 +36,12 @@ app.post('/api/media/:mediaItemId/:kind', upload.single('file'), function (req, 
   // req.file is the `avatar` file
   // req.body will hold the text fields, if there were any
   res.status(201).json({ success: true })
+})
+
+app.put('/api/media/:mediaItemId', function (req, res) {
+  console.log(`Updating status ${req.params.mediaItemId}`)
+  ThreadQueue.q.push({ id: `${req.params.mediaItemId}-statusUpdate`, task: new ThreadQueue.UpdateStatus({ mp3Id: req.params.mediaItemId, status: 'Uploaded to Subsplash' }) })
+  res.status(201).json({ status: 'Uploaded to Subsplash' })
 })
 
 const extensionFilter = file => file.indexOf('.mp3') >= 0 || file.indexOf('.png') >= 0
