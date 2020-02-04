@@ -40,7 +40,7 @@ app.post('/api/media/:mediaItemId/:kind', upload.single('file'), function (req, 
 
 app.put('/api/media/:mediaItemId', function (req, res) {
   console.log(`Updating status ${req.params.mediaItemId}`)
-  ThreadQueue.q.push({ id: `${req.params.mediaItemId}-statusUpdate`, task: new ThreadQueue.UpdateStatus({ mp3Id: req.params.mediaItemId, status: 'Uploaded to Subsplash' }) })
+  ThreadQueue.q.push({ id: `${req.params.mediaItemId}-statusUpdate`, task: new ThreadQueue.UpdateStatus({ mp3Id: `${MP3_STORAGE_LOCATION}/${req.params.mediaItemId}`, status: 'Uploaded to Subsplash' }) })
   res.status(201).json({ status: 'Uploaded to Subsplash' })
 })
 

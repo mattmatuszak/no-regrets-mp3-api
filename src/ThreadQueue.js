@@ -39,7 +39,7 @@ class UpdateStatus {
     this.status = params.status
   }
   async execute(taskId) {
-    console.log(`starting ${this.inputMp3} > ${this.outputMp3}`)
+    console.log(`starting ${this.mp3Id} > ${this.status}`)
     const subsplashe = await exec(`echo "${this.status}" > ${this.mp3Id}.txt`);
     return true
   }
@@ -100,7 +100,7 @@ const processor = (input, cb) => {
     .catch(err => cb(err))
 }
 
-const q = new Queue(processor, { concurrent: 2 })
+const q = new Queue(processor, { concurrent: 3 })
 
 q.on('task_failed', (taskId, err, stats) => {
   console.error(`FAILED: ${taskId}`)
